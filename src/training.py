@@ -4,23 +4,21 @@ Easy to setup and modify, verbose training progress vis.
 """
 # Imports
 import torch
-import torch.nn as nn
-
-
 
 class Training:
-    def __init__(self, model, optimizer, criterion, device) -> None:
+    def __init__(self, model, optimizer, criterion, device='cpu') -> None:
         self.model = model # PyTorch model object
         self.optimizer = optimizer #hyperparams are give through it for now
         self.criterion = criterion
         self.device = device # add GPU func
+        self.model = self.model.to(self.device)
         
         
     def fit(self, num_epochs, train_loader, log_inter):
         for epoch in range(num_epochs):
             running_loss = 0.0
-            for i, data in enumerate(train_loader, 0):
-                inputs, labels = data
+            for i, data in enumerate(train_loader, 0):                
+                inputs, labels = data[0].to(self.device), data[1].to(self.device)
                 
                 self.optimizer.zero_grad()
                 
@@ -40,25 +38,18 @@ class Training:
         num_samples = 0
         with torch.no_grad():
             for _, data in enumerate(test_loader,0):
-                inputs, labels = data
+                inputs, labels = data[0].to(self.device), data[1].to(self.device)
                 
                 outputs = self.model(inputs)
                 running_test_loss += self.criterion(outputs, labels)
                 num_samples += labels.size(0)
         resulting_test_loss = running_test_loss / num_samples
         print(f' test loss: {resulting_test_loss:.3f}')
+
     
     
-    def evaluate(self, inputs):
-        with torch.no_grad():
-            outputs = self.model(inputs)
-        return outputs
-    
-    
-        
-    
-                
-                
+    def save_model(self, PATH):
+        torch.save(self.model, PATH)
                 
                 
                 
