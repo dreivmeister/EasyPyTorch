@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "EasyPyTorch"
+version = "0.0.1"
+authors = [
+  { name="Felix Brandt", email="felix.brandt@fh-bielefeld.de" },
+]
+description = "Python Library for convenient use of PyTorch and for research paper implementations."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/dreivmeister/EasyPyTorch"
+"Bug Tracker" = "https://github.com/dreivmeister/EasyPyTorch/issuess"
