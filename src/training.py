@@ -6,12 +6,14 @@ Easy to setup and modify, verbose training progress vis.
 import torch
 
 class Training:
-    def __init__(self, model, optimizer, criterion, device='cpu') -> None:
+    def __init__(self, model, optimizer, criterion, device='cpu', attachments=None) -> None:
         self.model = model # PyTorch model object
         self.optimizer = optimizer #hyperparams are give through it for now
         self.criterion = criterion
         self.device = device # add GPU func
         self.model = self.model.to(self.device)
+        
+        self.attachments = attachments # list of functions to run during training
         
         
     def fit(self, num_epochs, train_loader, log_inter):
@@ -46,8 +48,7 @@ class Training:
         resulting_test_loss = running_test_loss / num_samples
         print(f' test loss: {resulting_test_loss:.3f}')
 
-    
-    
+
     def save_model(self, PATH):
         torch.save(self.model, PATH)
                 
