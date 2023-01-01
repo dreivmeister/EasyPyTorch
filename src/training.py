@@ -2,6 +2,8 @@
 Class which provides functionality to train and test a PyTorch Network.
 Easy to setup and modify, verbose training progress vis.
 """
+#TODO: write generic fit function for variable number of optimizers etc. and arbitrary attachments
+
 # Imports
 import torch
 
@@ -15,7 +17,7 @@ class Training:
         
         self.attachments = attachments # list of functions to run during training
         
-        
+    
     def fit(self, num_epochs, train_loader, log_inter=10, plot=False):
         losses = []
         for epoch in range(num_epochs):

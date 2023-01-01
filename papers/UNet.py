@@ -3,6 +3,7 @@ This file is an implementation of the UNet-Model from:
 U-Net: Convolutional Networks for Biomedical Image Segmentation
 https://arxiv.org/abs/1505.04597
 """
+#DONE
 
 import torch
 import torch.nn as nn

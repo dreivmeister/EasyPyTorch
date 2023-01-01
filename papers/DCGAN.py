@@ -9,27 +9,11 @@ import torch.nn as nn
 import numpy as np
 from tqdm import tqdm
 from matplotlib import pyplot as plt
-from keras.datasets.mnist import load_data
 
 
-
-#load (and normalize) mnist dataset
-(trainX, trainy), (testX, testy) = load_data()
-trainX = (np.float32(trainX) - 127.5) / 127.5
-
-
-def get_minibatch(batch_size):
-    indices = torch.randperm(trainX.shape[0])[:batch_size]
-    return nn.functional.interpolate(torch.tensor(trainX[indices], dtype=torch.float).reshape(batch_size, 1, 28, 28),size=(109,109))
-
-
-def sample_noise(size, dim=100):
-    out = torch.empty(size, dim)
-    mean = torch.zeros(size, dim)
-    std = torch.ones(dim)
-    torch.normal(mean, std, out=out)
-    return out
-
+# def get_minibatch(batch_size):
+#     indices = torch.randperm(trainX.shape[0])[:batch_size]
+#     return nn.functional.interpolate(torch.tensor(trainX[indices], dtype=torch.float).reshape(batch_size, 1, 28, 28),size=(109,109))
 
 
 class Generator(nn.Module):
@@ -82,6 +66,28 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         return self.network(x)
+    
+
+class DCGAN(nn.Module):
+    def __init__(self, batch_size, input_dim=100, inp_chs=3, output_dim=1):
+        super().__init__()
+        self.batch_size = batch_size
+        self.generator = Generator(input_dim=input_dim)
+        self.discriminator = Discriminator(inp_chs=inp_chs,output_dim=output_dim)
+        self.device = device
+    
+    def criterion(self, noise_out, batch_out):
+        
+        f_loss = torch.nn.BCELoss()(noise_out,torch.zeros(self.batch_size, device=self.device))
+        r_loss = torch.nn.BCELoss()(batch_out, torch.ones(self.batch_size, device=self.device))
+        return (r_loss + f_loss) / 2
+    
+    def forward(self, noise, batch=None):
+        if batch is not None:
+            return self.discriminator(batch).reshape(self.batch_size), self.discriminator(self.generator(noise)).reshape(self.batch_size)
+        return self.discriminator(self.generator(noise)).reshape(self.batch_size)
+    
+        
 
 
 def train(generator, discriminator, generator_optimizer, discriminator_optimizer, nb_epochs, k=1, batch_size=100, WGAN=False):
@@ -104,6 +110,7 @@ def train(generator, discriminator, generator_optimizer, discriminator_optimizer
                                             torch.zeros(batch_size, device=device))
                 r_loss = torch.nn.BCELoss()(discriminator(x).reshape(batch_size), torch.ones(batch_size, device=device))
                 loss = (r_loss + f_loss) / 2
+                
             discriminator_optimizer.zero_grad()
             loss.backward()
             discriminator_optimizer.step()
@@ -123,6 +130,7 @@ def train(generator, discriminator, generator_optimizer, discriminator_optimizer
         else:
             loss = torch.nn.BCELoss()(discriminator(generator(z)).reshape(batch_size),
                                     torch.ones(batch_size, device=device))
+            
         generator_optimizer.zero_grad()
         loss.backward()
         generator_optimizer.step()

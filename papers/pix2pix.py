@@ -4,15 +4,14 @@ Image-to-Image Translation with Conditional Adversarial Networks
 https://arxiv.org/abs/1611.07004
 """
 
-
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from DCGAN import sample_noise
+from utils import sample_noise
 
-def get_minibatch(batch_size):
-    #returns x,y: x-input image, y-output image
-    return torch.randn(batch_size, 3, 512, 512), torch.randn(batch_size, 3, 512, 512)
+# def get_minibatch(batch_size):
+#     #returns x,y: x-input image, y-output image
+#     return torch.randn(batch_size, 3, 512, 512), torch.randn(batch_size, 3, 512, 512)
 
 
 class Block(nn.Module):
@@ -80,6 +79,20 @@ class Discriminator(nn.Module):
         x = self.discriminator(x)
         x = x.view(x.size(0),-1) # Flatten the vector
         return torch.sigmoid(self.pred(x))
+
+
+class PIX2PIX(nn.Module): #Conditional Gan
+    def __init__(self, inp_chs_gen=3, inp_chs_dis=6, out_chs_dis=(64,128)) -> None:
+        super().__init__()
+        self.generator = Generator(inp_chs=inp_chs_gen)
+        self.discriminator = Discriminator(inp_chs=inp_chs_dis,out_chs=out_chs_dis)
+    
+    def forward(self, noise, batch, gen_step=False): #batch is (x,y) tuple of imgs
+        if gen_step:
+            return self.discriminator(batch[1],self.generator(batch[0],noise))
+        return self.discriminator(batch[1],self.generator(batch[0],noise)), self.discriminator(batch[0],batch[1])
+        
+
 
 
 
