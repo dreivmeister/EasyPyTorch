@@ -1,7 +1,9 @@
 import unittest
 import torch
 import torch.nn as nn
+import torchvision
 from src.training import Training
+from src.data import Data
 
 
 inputs = torch.randn(10, 3, 28, 28)
@@ -11,8 +13,15 @@ net = nn.Sequential(
     nn.Conv2d(in_channels=3,out_channels=32,kernel_size=3),
     nn.BatchNorm2d(num_features=32),
     nn.ReLU(),
+    nn.Conv2d(in_channels=32,out_channels=64,kernel_size=3),
+    nn.BatchNorm2d(num_features=32),
+    nn.ReLU(),
+    nn.Conv2d(in_channels=64,out_channels=128,kernel_size=3),
+    nn.BatchNorm2d(num_features=32),
+    nn.ReLU(),
+    nn.MaxPool2d(kernel_size=2,stride=2),
     nn.Flatten(),
-    nn.Linear(in_features=26*26*32,out_features=10),
+    nn.Linear(in_features=30*30*32,out_features=10),
     nn.Softmax(dim=1)
 )
 
@@ -28,11 +37,13 @@ class TrainingClassTest(unittest.TestCase):
     
     def train_model(self):
         T = Training(net, optimizer, criterion)
-        T.fit(num_epochs=1)
+        #C:\Users\DELL User\Desktop\EasyPyTorch\EasyPyTorch\datasets
+        D = Data(batch_size=12, dataset=torchvision.datasets.CIFAR10(root='\datasets',download=False,transform=torchvision.transforms.ToTensor()))
+        T.fit(num_epochs=1,train_loader=D.dataloader)
 
 
-if __name__=='__main__':
-    unittest.main()
+# if __name__=='__main__':
+#     unittest.main()
     
     
 #how to run from:

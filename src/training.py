@@ -16,7 +16,8 @@ class Training:
         self.attachments = attachments # list of functions to run during training
         
         
-    def fit(self, num_epochs, train_loader, log_inter):
+    def fit(self, num_epochs, train_loader, log_inter=10, plot=False):
+        losses = []
         for epoch in range(num_epochs):
             running_loss = 0.0
             for i, data in enumerate(train_loader, 0):                
@@ -31,8 +32,14 @@ class Training:
                 
                 running_loss += loss.item()
                 if i % log_inter == 0:
-                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                    norm_run_loss = running_loss / log_inter
+                    losses.append(norm_run_loss)
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {norm_run_loss:.3f}')
                     running_loss = 0.0
+        if plot:
+            import matplotlib.pyplot as plt
+            plt.plot(range(len(losses)), losses, '-ok');
+            plt.show()
     
     
     def predict(self, test_loader):

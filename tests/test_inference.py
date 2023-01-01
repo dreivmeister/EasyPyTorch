@@ -26,5 +26,5 @@ class InferenceClassTest(unittest.TestCase):
         I = Inference(model=net)
 
 
-if __name__=='__main__':
-    unittest.main()
+# if __name__=='__main__':
+#     unittest.main()
