@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 
 
+
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, identity_downsample=None, stride=1):
         super().__init__()
@@ -22,15 +23,16 @@ class ResidualBlock(nn.Module):
         if self.identity_downsample is not None:
             identity = self.identity_downsample(identity)
         return self.relu(x+identity)
-
-
-class ResNet18(nn.Module):
+    
+    
+class ResNet_18(nn.Module):
     #not exactly resnet18 but pretty close
-    def __init__(self, image_channels):
+    def __init__(self, image_channels, num_classes):
         super().__init__()
+        self.in_channels = 64
         
         #before resblocks
-        self.conv1 = nn.Conv2d(in_channels=image_channels, out_channels=64, kernel_size=7, stride=2, padding=3)
+        self.conv1 = nn.Conv2d(image_channels, 64, kernel_size=7, stride=2, padding=3)
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         
@@ -39,6 +41,9 @@ class ResNet18(nn.Module):
         self.layer2 = self.__make_layer(64, 128, stride=2)
         self.layer3 = self.__make_layer(128, 256, stride=2)
         self.layer4 = self.__make_layer(256, 512, stride=2)
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(512, num_classes)
         
     def identity_downsample(self, in_channels, out_channels):
         return nn.Sequential(
@@ -58,9 +63,12 @@ class ResNet18(nn.Module):
         
     def forward(self, x):
         x = self.maxpool(self.relu(self.conv1(x)))
-        out_1 = self.layer1(x)
-        out_2 = self.layer2(out_1)
-        out_3 = self.layer3(out_2)
-        out_4 = self.layer4(out_3)
-
-        return out_2,out_4
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        
+        x = self.avgpool(x)
+        x = x.view(x.shape[0], -1) # flatten the vector
+        x = self.fc(x)
+        return x
